@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import CurrencySelector from '../CurrencySelector';
 
 import './styles.css';
 
@@ -6,62 +7,197 @@ export default class App extends Component {
     constructor(props) {
         super(props);
 
+        // Currency is stored as integer increased by 10k
+        // To save 4 digits after decimal point
         this.state = {
             wallet: {
-                USD: 82.16,
-                EUR: 152.94,
-                GBP: 130.53
+                USD: 12871600,
+                EUR: 8609400
             },
             rates: {},
-            amount: null,
-            base: null
+            amountFrom: '',
+            amountTo: '',
+            currencyFrom: '',
+            currencyTo: ''
         }
 
-        this.getRates = this.getRates.bind(this);
-
-        // setInterval(this.getRates, 10000);
+        setInterval(this.getRates, 10000);
     }
 
     componentDidMount() {
+        const { wallet } = this.state;
+
+        this.setState({ currencyFrom: Object.keys(wallet)[0] });
         this.getRates();
     }
 
-    getRates() {
+    componentDidUpdate() {
+        const { wallet, rates, currencyFrom, currencyTo } = this.state;
+
+        // Handle wrong currencyFrom values
+        if (wallet.hasOwnProperty(currencyFrom) === false) {
+            this.setState({ currencyFrom: Object.keys(wallet)[0] });
+        }
+
+        // Handle wrong currencyTo values
+        if ((currencyTo === '' || currencyTo === currencyFrom) && rates.hasOwnProperty(currencyFrom) === true) {
+            this.setState({ currencyTo: Object.keys(rates[currencyFrom])[0] });
+        }
+    }
+
+    getRates = (base) => {
         const { wallet } = this.state;
 
-        console.log('Call recieve rates method.');
+        if (typeof base !== 'undefined') {
+            fetchData(base, this.updateRates);
+        } else {
+            Object.keys(wallet).forEach((base) => {
+                fetchData(base, this.updateRates);
+            })
+        }
 
-        Object.keys(wallet).forEach((base) => {
-            const symbols = Object.keys(wallet).filter((key) => key !== base).join(',');
-
-            fetch(`http://api.fixer.io/latest?base=${base}&symbols=${symbols}`)
+        function fetchData(base, callback) {
+            fetch(`http://api.fixer.io/latest?base=${base}`)
                 .then((responseJson) => responseJson.json())
                 .then((responseObject) => {
-                    this.updateRates(responseObject);
+                    callback(responseObject);
                 })
                 .catch((error) => {
                     console.error(error);
                 });
-        })
+        }
 
+        console.log('Get rates.');
     }
 
-    updateRates(ratesObject) {
-        const { rates } = this.state;
+    updateRates = (ratesObject) => {
+        let { rates } = this.state;
 
         rates[ratesObject.base] = ratesObject.rates;
+        this.setState({ rates },
+            this.updateAmountTo);
 
-        this.setState({ rates });
-        console.log('Rates were updated!', rates);
+        console.log('Rates update:', rates);
+    }
+
+    updateAmountFrom() {
+        const { rates, currencyFrom, currencyTo, amountTo } = this.state;
+        let amountFrom = '';
+
+        if (amountTo !== 0 && currencyTo !== '') {
+            amountFrom = this.stringToAmount(this.amountToNumber(amountTo) / rates[currencyFrom][currencyTo]);
+            this.setState({ amountFrom });
+        }
+
+        console.log('Update amountFrom.');
+    }
+
+    updateAmountTo() {
+        const { rates, currencyFrom, currencyTo, amountFrom } = this.state;
+        let amountTo = '';
+
+        if (amountFrom !== 0 && currencyTo !== '') {
+            amountTo = this.stringToAmount(this.amountToNumber(amountFrom) * rates[currencyFrom][currencyTo]);
+            this.setState({ amountTo });
+        }
+
+        console.log('Update amountTo.');
+    }
+
+    handleExchange = () => {
+        const { wallet, rates, amountFrom, amountTo, currencyFrom, currencyTo } = this.state;
+
+        // Create wallet entry for new currency and get rates for it
+        if (wallet.hasOwnProperty(currencyTo) === false) {
+            wallet[currencyTo] = 0;
+            this.getRates(currencyTo);
+        }
+
+        wallet[currencyFrom] -= amountFrom;
+        wallet[currencyTo] += amountTo;
+
+        // Delete wallet and rates entries for empty currency
+        if (wallet[currencyFrom] === 0) {
+            delete(wallet[currencyFrom]);
+            delete(rates[currencyFrom]);
+        }
+
+        this.setState({
+            wallet,
+            rates,
+            amountFrom: '',
+            amountTo: ''
+        });
+
+        console.log('Exchange.');
+    }
+
+    handleCurrencyFromChange = (currencyFrom) => {
+        this.setState({ currencyFrom },
+            this.updateAmountFrom);
+    }
+
+    handleCurrencyToChange = (currencyTo) => {
+        this.setState({ currencyTo },
+            this.updateAmountTo);
+    }
+
+    handleAmountFromChange = (event) => {
+        this.setState({ amountFrom: this.stringToAmount(event.target.value) },
+            this.updateAmountTo);
+    }
+
+    handleAmountToChange = (event) => {
+        this.setState({ amountTo: this.stringToAmount(event.target.value) },
+            this.updateAmountFrom);
+    }
+
+    amountToNumber(amount) {
+        return (amount / 10000).toFixed(2).replace('.00', '');
+    }
+
+    stringToAmount(string) {
+        return string === '' ? '': parseInt(parseFloat(string.toString().replace(',', '.')) * 10000, 10);
     }
 
     render() {
-        const { wallet, rates } = this.state;
+        const { wallet, rates, amountFrom, amountTo, currencyFrom, currencyTo } = this.state;
+
+        let isExchangeAvailable = amountFrom !== '' && amountTo !== '' &&
+            wallet[currencyFrom] >= amountFrom
 
         return (
             <div className="app">
-                <div>Wallet: { JSON.stringify(wallet) }</div>
-                <div>Rates: { JSON.stringify(rates) }</div>
+                <div>State: { JSON.stringify(this.state, null, '\t') }</div>
+                <div>
+                    From:
+                    <CurrencySelector
+                        currencyList={ Object.keys(wallet) }
+                        selectedValue={ currencyFrom }
+                        onSelect={ this.handleCurrencyFromChange }/>
+                    <input
+                        type="number"
+                        min="0"
+                        onChange={ this.handleAmountFromChange }
+                        value={ this.amountToNumber(amountFrom) }
+                        disabled={ currencyFrom === currencyTo }/>
+                </div>
+                { rates.hasOwnProperty(currencyFrom) &&
+                    <div>
+                        To:
+                        <CurrencySelector
+                            currencyList={ Object.keys(rates[currencyFrom])}
+                            selectedValue={ currencyTo }
+                            onSelect={ this.handleCurrencyToChange }/>
+                        <input
+                            type="number"
+                            min="0"
+                            onChange={ this.handleAmountToChange }
+                            value={ this.amountToNumber(amountTo) }
+                            disabled={ currencyFrom === currencyTo }/>
+                    </div>
+                }
+                <button onClick={ this.handleExchange } disabled={ !isExchangeAvailable }>Exchange</button>
             </div>
         );
     }
