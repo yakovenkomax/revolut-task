@@ -16,6 +16,7 @@ export default class App extends Component {
                 USD: 12871600,
                 EUR: 8609400
             },
+            availableCurrencies: ['USD', 'EUR', 'GBP'],
             rates: {},
             amountFrom: '',
             amountTo: '',
@@ -52,7 +53,7 @@ export default class App extends Component {
     }
 
     getRates = (base) => {
-        const { wallet } = this.state;
+        const { wallet, availableCurrencies } = this.state;
 
         if (typeof base !== 'undefined') {
             fetchData(base, this.updateRates);
@@ -63,7 +64,7 @@ export default class App extends Component {
         }
 
         function fetchData(base, callback) {
-            fetch(`http://api.fixer.io/latest?base=${base}`)
+            fetch(`http://api.fixer.io/latest?base=${base}&symbols=${availableCurrencies.join(',')}`)
                 .then((responseJson) => responseJson.json())
                 .then((responseObject) => {
                     callback(responseObject);
