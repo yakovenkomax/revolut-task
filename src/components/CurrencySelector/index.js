@@ -10,10 +10,15 @@ export default class App extends Component {
     }
 
     render() {
-        const { isDisabled, currencyList, selectedValue } = this.props;
+        const { isDisabled, currencyList, selectedValue, tabIndex } = this.props;
 
         return (
-            <select value={ selectedValue } onChange={ this.handleChange } disabled={ isDisabled }>
+            <select
+                className="select"
+                value={ selectedValue }
+                onChange={ this.handleChange }
+                disabled={ isDisabled }
+                tabIndex={ tabIndex }>
                 { currencyList.map((currency) =>
                     <option key={ currency } value={ currency }>{ currency }</option>
                 )}

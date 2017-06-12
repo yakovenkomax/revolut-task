@@ -1,3 +1,133 @@
 .app {
-    white-space: pre;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 320px;
+    max-width: 480px;
+    padding: 2rem;
+    margin: auto;
+    box-shadow: var(--shadow);
+}
+
+.app__header {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+
+.app__logo {
+
+}
+
+.app__logo-img {
+    width: 8rem;
+}
+
+.app__logo-appendix {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--color-black);
+}
+
+.app__body {
+
+}
+
+.app__wallet {
+    margin-bottom: 2rem;
+}
+
+.app__wallet-heading {
+    margin-bottom: 0.5rem;
+    color: var(--color-gray);
+}
+
+.app__wallet-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.app__wallet-entry {
+    margin-top: 0.25rem;
+    font-size: 1.25rem;
+    color: var(--color-blue);
+}
+
+.app__currency {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 1rem;
+}
+
+.app__currency-prefix {
+    width: 3rem;
+    margin-right: 1rem;
+    color: var(--color-gray);
+}
+
+.app__currency-select {
+    flex-grow: 1;
+    margin-right: 1rem;
+}
+
+.app__currency-amount {
+    flex-grow: 1;
+}
+
+.app__currency-input {
+    box-sizing: border-box;
+    padding: 0.15rem;
+    width: 100%;
+    border: 0;
+    outline: 0;
+    border-bottom: 1px solid var(--color-gray);
+    font-size: 1rem;
+    transition: border-color .3s, color .3s;
+}
+
+.app__currency-input:focus {
+    border-bottom-color: var(--color-blue);
+}
+
+.app__currency-input_invalid {
+    color: var(--color-red);
+}
+
+.app__currency-rate {
+    margin-top: 0.25rem;
+    font-size: 0.65rem;
+    color: var(--color-gray);
+}
+
+.app__action {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.app__exchange-button {
+    display: inline-block;
+    padding: 1rem 4.125rem;
+    border: 0;
+    outline: 0;
+    border-radius: 2rem;
+    color: #fff;
+    font-weight: 500;
+    position: relative;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    background-color: var(--color-pink);
+    transition: background-color .45s, opacity .3s;
+}
+
+.app__exchange-button:active {
+    background-color: var(--color-pink-dark);
+}
+
+.app__exchange-button_disabled {
+    opacity: 0.15;
 }

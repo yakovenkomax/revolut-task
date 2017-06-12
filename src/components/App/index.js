@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import CurrencySelector from '../CurrencySelector';
+import classnames from 'classnames';
 
 import './styles.css';
+import logo from '../../logo.svg';
 
 export default class App extends Component {
     constructor(props) {
@@ -172,41 +174,88 @@ export default class App extends Component {
     render() {
         const { wallet, rates, amountFrom, amountTo, currencyFrom, currencyTo } = this.state;
 
-        let isExchangeAvailable = amountFrom !== '' && amountTo !== '' &&
+        const isExchangeAvailable = amountFrom !== '' && amountTo !== '' &&
             wallet[currencyFrom] >= amountFrom
+
+        const validAmountFrom = wallet[currencyFrom] >= amountFrom;
 
         return (
             <div className="app">
-                <div>State: { JSON.stringify(this.state, null, '\t') }</div>
-                <div>
-                    From:
-                    <CurrencySelector
-                        currencyList={ Object.keys(wallet) }
-                        selectedValue={ currencyFrom }
-                        onSelect={ this.handleCurrencyFromChange }/>
-                    <input
-                        type="number"
-                        min="0"
-                        onChange={ this.handleAmountFromChange }
-                        value={ this.amountToString(amountFrom) }
-                        disabled={ currencyFrom === currencyTo }/>
-                </div>
-                { rates.hasOwnProperty(currencyFrom) &&
-                    <div>
-                        To:
-                        <CurrencySelector
-                            currencyList={ Object.keys(rates[currencyFrom])}
-                            selectedValue={ currencyTo }
-                            onSelect={ this.handleCurrencyToChange }/>
-                        <input
-                            type="number"
-                            min="0"
-                            onChange={ this.handleAmountToChange }
-                            value={ this.amountToString(amountTo) }
-                            disabled={ currencyFrom === currencyTo }/>
+                <header className="app__header">
+                    <div className="app__logo">
+                        <img src={ logo } className="app__logo-img" alt="Revolut" />
                     </div>
-                }
-                <button onClick={ this.handleExchange } disabled={ !isExchangeAvailable }>Exchange</button>
+                    <div className="app__logo-appendix">Exchange</div>
+                </header>
+                <main className="app__body">
+                    <div className="app__wallet">
+                        <div className="app__wallet-heading">
+                            Your wallet:
+                        </div>
+                        <ul className="app__wallet-list">
+                            { Object.keys(wallet).map((currency) =>
+                                <li key={ currency } className="app__wallet-entry">
+                                    { new Intl.NumberFormat('ru-RU', { style: 'currency', currency: currency }).format(this.amountToString(wallet[currency])) }
+                                </li>
+                            )}
+                        </ul>
+
+                    </div>
+                    <div className="app__currency">
+                        <div className="app__currency-prefix">From:</div>
+                        <div className="app__currency-select">
+                            <CurrencySelector
+                                currencyList={ Object.keys(wallet) }
+                                selectedValue={ currencyFrom }
+                                onSelect={ this.handleCurrencyFromChange }
+                                tabIndex='1'/>
+                        </div>
+                        <div className="app__currency-amount">
+                            <input
+                                className={ classnames('app__currency-input', { 'app__currency-input_invalid': !validAmountFrom }) }
+                                type="number"
+                                min="0"
+                                onChange={ this.handleAmountFromChange }
+                                value={ this.amountToString(amountFrom) }
+                                tabIndex='2'/>
+                        </div>
+                    </div>
+                    { rates.hasOwnProperty(currencyFrom) &&
+                        <div className="app__currency">
+                            <div className="app__currency-prefix">To:</div>
+                            <div className="app__currency-select">
+                                <CurrencySelector
+                                    currencyList={ Object.keys(rates[currencyFrom])}
+                                    selectedValue={ currencyTo }
+                                    onSelect={ this.handleCurrencyToChange }
+                                    tabIndex='3'/>
+                            </div>
+                            <div className="app__currency-amount">
+                                <input
+                                    className="app__currency-input"
+                                    type="number"
+                                    min="0"
+                                    onChange={ this.handleAmountToChange }
+                                    value={ this.amountToString(amountTo) }
+                                    tabIndex='4'/>
+                                <div className="app__currency-rate">
+                                    { currencyFrom !== '' && currencyTo !== '' &&
+                                        `${new Intl.NumberFormat('ru-RU', { style: 'currency', currency: currencyFrom, maximumFractionDigits: 0, minimumFractionDigits: 0, }).format(1)} = ${new Intl.NumberFormat('ru-RU', { style: 'currency', currency: currencyTo, minimumFractionDigits: 4 }).format(rates[currencyFrom][currencyTo])}`
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <div className="app__action">
+                        <button
+                            className={ classnames('app__exchange-button', { 'app__exchange-button_disabled': !isExchangeAvailable }) }
+                            onClick={ this.handleExchange }
+                            disabled={ !isExchangeAvailable }
+                            tabIndex='5'>
+                            Exchange
+                        </button>
+                    </div>
+                </main>
             </div>
         );
     }
