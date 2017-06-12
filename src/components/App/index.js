@@ -21,13 +21,17 @@ export default class App extends Component {
             currencyTo: ''
         }
 
+        // Update rates every 10 seconds
         setInterval(this.getRates, 10000);
     }
 
     componentDidMount() {
         const { wallet } = this.state;
 
+        // Set default currencyFrom value
         this.setState({ currencyFrom: Object.keys(wallet)[0] });
+
+        // Update rates
         this.getRates();
     }
 
@@ -85,7 +89,7 @@ export default class App extends Component {
         let amountFrom = '';
 
         if (amountTo !== 0 && currencyTo !== '') {
-            amountFrom = this.stringToAmount(this.amountToNumber(amountTo) / rates[currencyFrom][currencyTo]);
+            amountFrom = this.valueToAmount(this.amountToNumber(amountTo) / rates[currencyFrom][currencyTo]);
             this.setState({ amountFrom });
         }
 
@@ -97,7 +101,7 @@ export default class App extends Component {
         let amountTo = '';
 
         if (amountFrom !== 0 && currencyTo !== '') {
-            amountTo = this.stringToAmount(this.amountToNumber(amountFrom) * rates[currencyFrom][currencyTo]);
+            amountTo = this.valueToAmount(this.amountToNumber(amountFrom) * rates[currencyFrom][currencyTo]);
             this.setState({ amountTo });
         }
 
@@ -113,6 +117,7 @@ export default class App extends Component {
             this.getRates(currencyTo);
         }
 
+        // Perform wallet changes
         wallet[currencyFrom] -= amountFrom;
         wallet[currencyTo] += amountTo;
 
@@ -143,21 +148,25 @@ export default class App extends Component {
     }
 
     handleAmountFromChange = (event) => {
-        this.setState({ amountFrom: this.stringToAmount(event.target.value) },
+        this.setState({ amountFrom: this.valueToAmount(event.target.value) },
             this.updateAmountTo);
     }
 
     handleAmountToChange = (event) => {
-        this.setState({ amountTo: this.stringToAmount(event.target.value) },
+        this.setState({ amountTo: this.valueToAmount(event.target.value) },
             this.updateAmountFrom);
     }
 
     amountToNumber(amount) {
+        return amount / 10000;
+    }
+
+    amountToString(amount) {
         return (amount / 10000).toFixed(2).replace('.00', '');
     }
 
-    stringToAmount(string) {
-        return string === '' ? '': parseInt(parseFloat(string.toString().replace(',', '.')) * 10000, 10);
+    valueToAmount(value) {
+        return value === '' ? '': parseInt(parseFloat(value.toString().replace(',', '.')) * 10000, 10);
     }
 
     render() {
@@ -179,7 +188,7 @@ export default class App extends Component {
                         type="number"
                         min="0"
                         onChange={ this.handleAmountFromChange }
-                        value={ this.amountToNumber(amountFrom) }
+                        value={ this.amountToString(amountFrom) }
                         disabled={ currencyFrom === currencyTo }/>
                 </div>
                 { rates.hasOwnProperty(currencyFrom) &&
@@ -193,7 +202,7 @@ export default class App extends Component {
                             type="number"
                             min="0"
                             onChange={ this.handleAmountToChange }
-                            value={ this.amountToNumber(amountTo) }
+                            value={ this.amountToString(amountTo) }
                             disabled={ currencyFrom === currencyTo }/>
                     </div>
                 }
