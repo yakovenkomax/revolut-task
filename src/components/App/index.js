@@ -11,6 +11,8 @@ export default class App extends Component {
 
         // Currency is stored as integer increased by 10k
         // To save 4 digits after decimal point
+        // Empty string value is also possible to preserve
+        // Default input behaviour
         this.state = {
             wallet: {
                 USD: 12871600,
@@ -178,7 +180,7 @@ export default class App extends Component {
         const isExchangeAvailable = amountFrom !== '' && amountTo !== '' &&
             wallet[currencyFrom] >= amountFrom
 
-        const validAmountFrom = wallet[currencyFrom] >= amountFrom;
+        const isAmountFromValid = wallet[currencyFrom] >= amountFrom;
 
         return (
             <div className="app">
@@ -213,7 +215,7 @@ export default class App extends Component {
                         </div>
                         <div className="app__currency-amount">
                             <input
-                                className={ classnames('app__currency-input', { 'app__currency-input_invalid': !validAmountFrom }) }
+                                className={ classnames('app__currency-input', { 'app__currency-input_invalid': !isAmountFromValid }) }
                                 type="number"
                                 min="0"
                                 onChange={ this.handleAmountFromChange }

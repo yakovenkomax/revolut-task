@@ -18,10 +18,6 @@
     margin-bottom: 2rem;
 }
 
-.app__logo {
-
-}
-
 .app__logo-img {
     width: 8rem;
 }
@@ -31,10 +27,6 @@
     font-weight: 600;
     text-transform: uppercase;
     color: var(--color-black);
-}
-
-.app__body {
-
 }
 
 .app__wallet {
