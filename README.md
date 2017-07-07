@@ -1,5 +1,7 @@
 # Revolut task
 
+Result: 👎 (Reason unknown)
+
 <img width="888" alt="Preview" src="https://user-images.githubusercontent.com/5172360/27052414-4aef6e98-4fc2-11e7-9f62-9ad2d2b61e10.png">
 
 Run `npm start` to start development server.
